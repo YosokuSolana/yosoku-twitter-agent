@@ -41,7 +41,10 @@ function isValidBase58PublicKey(addr: string): boolean {
 }
 
 function parseResolverType(raw: string | undefined): { resolver: ResolverTypeConfig; errors: string[] } {
-  if (!raw || raw.toLowerCase() === 'uma') {
+  if (!raw) {
+    return { resolver: { type: 'uma' }, errors: ['RESOLVER is required (use "UMA" for default oracle resolution)'] };
+  }
+  if (raw.toLowerCase() === 'uma') {
     return { resolver: { type: 'uma' }, errors: [] };
   }
 
@@ -93,10 +96,14 @@ export function parseTemplate(text: string, hasImage: boolean = false): ParseRes
   } else if (sanitizeText(category).length > MAX_CATEGORY_LENGTH) {
     errors.push(`CAT must be under ${MAX_CATEGORY_LENGTH} characters`);
   }
-  if (description && sanitizeText(description).length > MAX_DESCRIPTION_LENGTH) {
+  if (!description) {
+    errors.push('DESC (description) is required');
+  } else if (sanitizeText(description).length > MAX_DESCRIPTION_LENGTH) {
     errors.push(`DESC must be under ${MAX_DESCRIPTION_LENGTH} characters`);
   }
-  if (rules && sanitizeText(rules).length > MAX_RULES_LENGTH) {
+  if (!rules) {
+    errors.push('RULES (resolution rules) is required');
+  } else if (sanitizeText(rules).length > MAX_RULES_LENGTH) {
     errors.push(`RULES must be under ${MAX_RULES_LENGTH} characters`);
   }
 
@@ -144,5 +151,5 @@ export function parseTemplate(text: string, hasImage: boolean = false): ParseRes
 }
 
 export function buildTemplateReply(username: string): string {
-  return `@${username} To create a market, reply with an image and:\n\nQ: [Your yes/no question]\nCAT: [Category e.g. crypto, sports]\nEND: [YYYY-MM-DD]\nWALLET: [Your Solana wallet]\n\nOptional:\nDESC: [Description]\nRULES: [Resolution rules]\nRESOLVER: [UMA (default) or wallet1,wallet2,...]`;
+  return `@${username} To create a market, reply with an image and:\n\nQ: [Your yes/no question]\nCAT: [Category e.g. crypto, sports]\nEND: [YYYY-MM-DD]\nWALLET: [Your Solana wallet]\nDESC: [Description]\nRULES: [Resolution rules]\nRESOLVER: [UMA or wallet1,wallet2,...]`;
 }
